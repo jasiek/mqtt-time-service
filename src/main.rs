@@ -6,13 +6,21 @@ use std::thread::sleep;
 use std::env;
 use chrono::prelude::*;
 
+fn varvalue(key: &str) -> String {
+    match env::var(key) {
+        Ok(s) => return s,
+        _ => panic!(format!("{} not set", key)),
+    };
+}
+
 fn main() {
-    let mqtt_host = env::var("MQTT_HOST").expect("MQTT_HOST not set");
-    let mqtt_port = env::var("MQTT_PORT").expect("MQTT_PORT not set");
-    let every_s = env::var("EVERY_SECONDS").expect("EVERY_SECONDS not set");
+    let mqtt_host = varvalue("MQTT_HOST");
+    let mqtt_port = varvalue("MQTT_PORT");
+
+    let every_s = varvalue("EVERY_SECONDS");
     let every_s :u64 = every_s.parse().expect("EVERY_SECONDS should be a number");
     
-    let client_options = MqttOptions::new().set_broker(&format!("{}:{}", mqtt_host, mqtt_port));
+    let client_options = MqttOptions::new().set_broker(&format!("{}:{}", mqtt_host, mqtt_port)).set_should_verify_ca(true).set_ca("/opt/local/share/curl/curl-ca-bundle.crt");
     let unix_epoch = Utc.ymd(1970, 1, 1).and_hms(0, 0, 0);
 
     let mut request = MqttClient::start(client_options, None).expect("can't start");
