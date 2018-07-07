@@ -1,6 +1,9 @@
 [package]
-
-name = "mqtt_time_service"
+name = "mqtt-time-service"
 version = "0.0.1"
 authors = ["Jan Szumiec <jan.szumiec@gmail.com>"]
+
+[dependencies]
+rumqtt = "0.10.1"
+
 
