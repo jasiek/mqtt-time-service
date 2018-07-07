@@ -20,9 +20,11 @@ fn main() {
         let t = Local::now();
         let e = t.signed_duration_since(unix_epoch);
         let seconds = e.num_seconds();
-        let message = format!("{}", seconds);
-        println!("{}", seconds);
-        request.publish("time/epoch", QoS::Level1, message.into_bytes()).expect("publish failure");
+        let epoch_message = format!("{}", seconds);
+        let rfc3339_message = t.to_rfc3339();
+        println!("{}", rfc3339_message);
+        request.publish("time/epoch", QoS::Level1, epoch_message.into_bytes()).expect("publish failure");
+        request.publish("time/rfc3339", QoS::Level1, rfc3339_message.into_bytes()).expect("publish failure");
         sleep(Duration::new(every_s, 0));
     }
 }
