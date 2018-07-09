@@ -16,11 +16,26 @@ fn varvalue(key: &str) -> String {
 fn main() {
     let mqtt_host = varvalue("MQTT_HOST");
     let mqtt_port = varvalue("MQTT_PORT");
+    
+    // these don't have to be set
+    let mqtt_ca = env::var("MQTT_CA");
+    let mqtt_user = env::var("MQTT_USER");
+    let mqtt_pass = env::var("MQTT_PASS");
 
     let every_s = varvalue("EVERY_SECONDS");
     let every_s :u64 = every_s.parse().expect("EVERY_SECONDS should be a number");
     
-    let client_options = MqttOptions::new().set_broker(&format!("{}:{}", mqtt_host, mqtt_port)).set_should_verify_ca(true).set_ca("/opt/local/share/curl/curl-ca-bundle.crt");
+    let client_options = MqttOptions::new().set_broker(&format!("{}:{}", mqtt_host, mqtt_port));
+    let client_options = match mqtt_ca {
+        Ok(ca) => client_options.set_should_verify_ca(true).set_ca(ca),
+        Err(_) => client_options
+    };
+
+    let client_options = match (mqtt_user, mqtt_pass) {
+        (Ok(u), Ok(p)) => client_options.set_user_name(&u).set_password(&p),
+        _ => client_options
+    };
+
     let unix_epoch = Utc.ymd(1970, 1, 1).and_hms(0, 0, 0);
 
     let mut request = MqttClient::start(client_options, None).expect("can't start");
